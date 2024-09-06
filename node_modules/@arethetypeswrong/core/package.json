@@ -1,0 +1,67 @@
+{
+  "name": "@arethetypeswrong/core",
+  "version": "0.15.1",
+  "description": "The API behind arethetypeswrong.github.io",
+  "author": "Andrew Branch",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arethetypeswrong/arethetypeswrong.github.io.git",
+    "directory": "packages/core"
+  },
+  "files": [
+    "LICENSE",
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "imports": {
+    "#internal/*": "./dist/internal/*"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "development": "./src/types.ts",
+      "default": "./dist/types.js"
+    },
+    "./utils": {
+      "development": "./src/utils.ts",
+      "default": "./dist/utils.js"
+    },
+    "./problems": {
+      "development": "./src/problems.ts",
+      "default": "./dist/problems.js"
+    },
+    "./versions": {
+      "node": "./dist/versions.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@andrewbranch/untar.js": "^1.0.3",
+    "fflate": "^0.8.2",
+    "semver": "^7.5.4",
+    "ts-expose-internals-conditionally": "1.0.0-empty.0",
+    "typescript": "5.3.3",
+    "validate-npm-package-name": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.6",
+    "@types/semver": "^7.5.0",
+    "@types/validate-npm-package-name": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "tsc -b test && node --test 'test/dist/**/*.test.js'",
+    "snapshot": "node scripts/createSnapshotFixture.js"
+  }
+}

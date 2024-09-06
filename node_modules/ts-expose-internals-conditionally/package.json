@@ -1,0 +1,37 @@
+{
+  "name": "ts-expose-internals-conditionally",
+  "description": "Augment the TypeScript compiler module's types to expose hidden internal types when tsconfig.json contains \"ts-expose-internals\" in `customConditions`.",
+  "version": "1.0.0-empty.0",
+  "license": "MIT",
+  "author": "Andrew Branch <andrew@wheream.io>",
+  "types": "./empty.d.ts",
+  "contributors": [
+    {
+      "name": "Ron Spickenagel",
+      "url": "https://twitter.com/ron"
+    },
+    {
+      "name": "Andrew Branch",
+      "email": "andrew@wheream.io"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:andrewbranch/ts-expose-internals-conditionally.git"
+  },
+  "files": [
+    "empty.d.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "typescript",
+    "internal types",
+    "internals",
+    "byots",
+    "types"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}
