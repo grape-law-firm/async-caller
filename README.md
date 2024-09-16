@@ -1,7 +1,7 @@
-# AsyncCaller
+# @grapelaw/async-caller
 
 AsyncCaller is a TypeScript library for making asynchronous calls with retry, concurrency, and rate limiting capabilities.
-It is used with TokenBucket module that you can find at "url".
+It utilizes TokenBucket module that you can find at "https://github.com/grape-law-firm/token-bucket".
 
 ## Features
 
@@ -207,3 +207,10 @@ const asyncCaller = new AsyncCaller({
   concurrency: 10,
 });
 ```
+## Authors
+Nurbaki Kasikci - [GitHub](https://github.com/mnkasikci)  - [Twitter](https://twitter.com/mnkasikci)
+
+## Contribution
+We welcome contributions to improve this package and encourage users to submit bug reports, feature requests, or any other contributions that can enhance the project. Please follow the guidelines below to contribute:
+1. Report Issues: If you encounter any issues or have suggestions for improvements, please open an issue on [GitHub](https://github.com/grape-law-firm/token-bucket/issues) 
+2. Pull Requests: You are welcome to [submit Pull Requests](https://github.com/grape-law-firm/token-bucket/pulls) (PRs) for bug fixes or new features. Make sure to follow the established coding conventions and explain the purpose of your changes. 

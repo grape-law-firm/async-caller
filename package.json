@@ -1,50 +1,36 @@
 {
-  "name": "@glf/asyncCaller-package-demo",
-  "version": "1.1.0",
-  "description": "A demo package for asyncCaller",
-  "main": "dist/index.js",
-  "keywords": [
-    "asyncCaller",
-    "typescript",
-    "async"
-  ],
-  "homepage": "https://github.com/selman-sezer/asyncCaller-package-demo",
-  "bugs": {
-    "url": "https://github.com/selman-sezer/asyncCaller-package-demo/issues"
-  },
-  "author": "Selman Sezer",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/selman-sezer/asyncCaller-package-demo.git"
-  },
+  "name": "@grapelaw/async-caller",
+  "version": "1.0.0",
+  "keywords": [],
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
+  "types": "lib/index.d.ts",
   "files": [
-    "dist"
+    "lib"
   ],
-  "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "build": "tsup",
-    "format": "prettier --write .",
-    "check-format": "prettier --check .",
-    "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
-    "ci": "npm run build && npm run check-format && npm run check-exports",
-    "local-release": "changeset version && changeset publish",
-    "prepublishOnly": "npm run ci"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
-  "license": "MIT",
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.15.4",
-    "@changesets/cli": "^2.27.8",
-    "@types/node": "^22.5.4",
-    "prettier": "^3.3.3",
-    "tsup": "^8.2.4",
-    "typescript": "^5.5.4",
-    "vitest": "^2.0.5"
+    "@types/node": "^20.4.2",
+    "eslint": "^8.50.0",
+    "eslint-config-standard-with-typescript": "^39.1.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-n": "^16.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "tsup": "^8.0.2",
+    "typescript": "^5.2.2"
   },
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": "./dist/index.js",
-      "default": "./dist/index.cjs"
-    }
+  "publishConfig": {
+    "@grape-law-firm:registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "@grapelaw/token-bucket": "^1.0.1"
   }
 }
