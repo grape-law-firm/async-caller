@@ -1,7 +1,7 @@
 # @grapelaw/async-caller
 
 AsyncCaller is a TypeScript library for making asynchronous calls with retry, concurrency, and rate limiting capabilities.
-It utilizes TokenBucket module that you can find at "https://github.com/grape-law-firm/token-bucket".
+It utilizes TokenBucket module that you can find at "https://www.npmjs.com/package/@grapelaw/token-bucket".
 
 ## Features
 

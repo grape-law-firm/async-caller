@@ -1,6 +1,6 @@
 {
   "name": "@grapelaw/async-caller",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": [],
   "main": "lib/index.js",
   "module": "lib/index.mjs",
@@ -27,10 +27,11 @@
     "tsup": "^8.0.2",
     "typescript": "^5.2.2"
   },
-  "publishConfig": {
-    "@grape-law-firm:registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "@grapelaw/token-bucket": "^1.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grape-law-firm/async-caller"
   }
 }
