@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "build": "tsup",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "changelog": "changelogen --release --no-tag"
   },
   "devDependencies": {
     "@types/node": "^20.4.2",
@@ -26,7 +27,8 @@
     "eslint-plugin-n": "^16.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "tsup": "^8.0.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "changelogen":"^0.5.7"
   },
   "dependencies": {
     "@grapelaw/token-bucket": "^1.0.1"
