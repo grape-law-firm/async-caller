@@ -17,7 +17,7 @@
     "build": "tsup",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "release": "git pull && changeloggen --release && git push --follow-tags && npm publish --tag latest"
+    "release": "git pull && changelogen --release && git push --follow-tags && npm publish --tag latest"
   },
   "devDependencies": {
     "@types/node": "^20.4.2",
