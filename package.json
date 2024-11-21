@@ -1,6 +1,6 @@
 {
   "name": "@grapelaw/async-caller",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "keywords": ["async", "concurrency", "retry mechanism", "type safety"],
   "license": "MIT",
   "main": "lib/index.js",
@@ -17,7 +17,7 @@
     "build": "tsup",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "changelog": "changelogen --release --no-tag"
+    "release": "git pull && changelogen --release && git push --follow-tags && npm publish --tag latest"
   },
   "devDependencies": {
     "@types/node": "^20.4.2",
