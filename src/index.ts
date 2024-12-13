@@ -135,7 +135,7 @@ export class AsyncCaller {
           throw err;
         }
         const identifiedErrors = this.resultIdentifier.identifyError(err);
-        if (identifiedErrors.isClientSideError)
+        if (identifiedErrors.isClientSideError && !identifiedErrors.isRateLimited)
           throw err;
         // At this point, it is either a rate limit error, or an Unkown error. Either way, we retry with delay.
         const delay = this.calculateRetryDelay(tryCount, err.headers ?? err.response?.headers);
