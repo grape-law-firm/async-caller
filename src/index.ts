@@ -62,7 +62,7 @@ export class AsyncCaller {
     customResultIdentifier?: ResultIdentifier;
   }, verbose: boolean = false) {
     if (options?.tokenBucketOptions)
-      options.tokenBucketOptions.fillPerWindow += 10; // Safety margin. We actually call the function a bit later after the token is consumed.
+      options.tokenBucketOptions.windowInMs += 10; // Safety margin. We actually call the function a bit later after the token is consumed.
 
     this.verbose = verbose;
     this._tokenBucket = new TokenBucket(options?.tokenBucketOptions ?? defaultTokenBucketOptions, this.verbose);
