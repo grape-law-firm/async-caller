@@ -31,3 +31,20 @@ export interface TokenBucketOptions {
   windowInMs: number;
   initialTokens?: number;
 }
+
+/**
+ * Should have two functions. One for identifying the result of the function, and one for identifying the error thrown by the function.
+ *
+ * Based on the determination of the function, the retry logic will be applied.
+ *
+ */
+export interface ResultIdentifier {
+  identifyResult: (result: any) => {
+    isRateLimited: boolean;
+    isClientSideError: boolean;
+  };
+  identifyError: (error: any) => {
+    isRateLimited: boolean;
+    isClientSideError: boolean;
+  };
+}
