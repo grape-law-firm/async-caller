@@ -39,12 +39,30 @@ export interface TokenBucketOptions {
  *
  */
 export interface ResultIdentifier {
+  /**
+   * Identify the result of the function, in case the function resolves to a value
+   * @param result - The result of the function.
+   * @returns An object with two properties: isRateLimited and isClientSideError.
+   */
   identifyResult: (result: any) => {
+    /**
+     * If the result is considered rate limited, this should be true. In this case, the next retry (if any) will be delayed according to default logic, or the custom logic provided by the user.
+     */
     isRateLimited: boolean;
-    isClientSideError: boolean;
   };
+  /**
+   * Identify the error thrown by the function.
+   * @param error - The error thrown by the function.
+   * @returns An object with two properties: isRateLimited and isClientSideError.
+   */
   identifyError: (error: any) => {
+    /**
+     * If the error is considered rate limited, this should be true. In this case, the next retry (if any) will be delayed according to default logic, or the custom logic provided by the user. **Important**: This property takes precedence over `dontRetry`.
+     */
     isRateLimited: boolean;
-    isClientSideError: boolean;
+    /**
+     * If the error shows that retrying is pointless (i.e client side error), this should be true. In this case (if this is `true` AND `isRateLimited` is `false`), retry will be stopped and the error will be thrown. **Important**: `isRateLimited` takes precedence over `dontRetry`.
+     */
+    dontRetry: boolean;
   };
 }
