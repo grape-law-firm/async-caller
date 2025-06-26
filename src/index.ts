@@ -61,11 +61,13 @@ export class AsyncCaller {
     concurrency?: number;
     customResultIdentifier?: ResultIdentifier;
   }, verbose: boolean = false) {
-    if (options?.tokenBucketOptions)
-      options.tokenBucketOptions.windowInMs += 10; // Safety margin. We actually call the function a bit later after the token is consumed.
-
     this.verbose = verbose;
-    this._tokenBucket = new TokenBucket(options?.tokenBucketOptions ?? defaultTokenBucketOptions, this.verbose);
+    this._tokenBucket = new TokenBucket(options?.tokenBucketOptions
+      ? {
+        ...options.tokenBucketOptions,
+        windowInMs: options.tokenBucketOptions.windowInMs + 10,
+      }
+      : defaultTokenBucketOptions, this.verbose);
     this._retryOptions = options?.retryOptions ?? defaultRetryOptions;
     this._concurrency = options?.concurrency ?? 5;
     this.queue = [];
