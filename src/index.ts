@@ -1,5 +1,6 @@
 import { TokenBucket } from "@grapelaw/token-bucket";
-import type { RetryOptions, TokenBucketOptions } from "./types.js";
+import type { RetryOptions, TokenBucketOptions, ResultIdentifier } from "./types.js";
+
 const defaultTokenBucketOptions: TokenBucketOptions = {
   capacity: 10,
   fillPerWindow: 1,
@@ -24,6 +25,8 @@ const defaultRetryOptions: RetryOptions = {
  * @param options.tokenBucketOptions.initialTokens - The initial number of allowed requests. If not provided, it defaults to the capacity. Setting it to a lower value can be useful for gradually ramping up the rate.
  * @param options.retryOptions - The options for configuring the retry behavior.
  * @param options.concurrency - The maximum number of concurrent tasks allowed.
+ * @param options.customResultIdentifier - A custom result identifier for identifying the result of the function.
+ * @param options.customRetryDelayInMsCalculator - A custom retry delay calculator for calculating the retry delay in milliseconds. This is used to calculate the retry delay in milliseconds based on the result of the function or the error thrown by the function.
  *
  * @example
  * // Create an AsyncCaller with a simple rate limit of 10 requests per second
@@ -45,32 +48,57 @@ const defaultRetryOptions: RetryOptions = {
  *   },
  * });
  */
-export class AsyncCaller {
+
+export class AsyncCaller<U=any> {
   private readonly _tokenBucket: TokenBucket;
   private readonly _retryOptions: RetryOptions;
   private readonly _concurrency: number;
   private runningTasks: number = 0;
-  private readonly queue: any[];
-  verbose: boolean;
-
+  private readonly queue: Array<() => void>;
+  private readonly verbose: boolean;
+  private readonly resultIdentifier: ResultIdentifier;
+  private readonly getRetryDelay: (attemptCount: number, result: U | Error) => number;
   constructor (options?: {
     tokenBucketOptions?: TokenBucketOptions;
     retryOptions?: RetryOptions;
     concurrency?: number;
+    customResultIdentifier?: ResultIdentifier;
+    customRetryDelayInMsCalculator?: (attemptCount: number, result: U | Error) => number;
   }, verbose: boolean = false) {
     this.verbose = verbose;
-    this._tokenBucket = new TokenBucket(options?.tokenBucketOptions ?? defaultTokenBucketOptions, this.verbose);
+    this._tokenBucket = new TokenBucket(options?.tokenBucketOptions
+      ? {
+        ...options.tokenBucketOptions,
+        windowInMs: options.tokenBucketOptions.windowInMs + 10,
+      }
+      : defaultTokenBucketOptions, this.verbose);
     this._retryOptions = options?.retryOptions ?? defaultRetryOptions;
     this._concurrency = options?.concurrency ?? 5;
     this.queue = [];
+    this.resultIdentifier = options?.customResultIdentifier ?? this.defaultIdentifier;
+    this.getRetryDelay = options?.customRetryDelayInMsCalculator ?? this.defaultCalculateRetryDelay;
   }
 
-  public async call<T>(fn: () => Promise<T>): Promise<T> {
+  private readonly defaultIdentifier: ResultIdentifier = {
+    identifyResult: (response) => {
+      return {
+        isRateLimited: this.isRateLimitedError(response),
+      };
+    },
+    identifyError: (error) => {
+      return {
+        isRateLimited: this.isRateLimitedError(error),
+        dontRetry: this.isClientSideError(error),
+      };
+    },
+  };
+
+  public async call<T extends U>(fn: () => Promise<T>): Promise<T> {
     await new Promise<void>((resolve) => {
       this.queue.push(resolve);
       this.processTaskQueue();
     });
-    return await this.executeAndHandleErrors(fn);
+    return this.executeAndHandleErrors(fn);
   }
 
   private processTaskQueue () {
@@ -84,7 +112,7 @@ export class AsyncCaller {
     }
   }
 
-  private async executeWithRetry<T> (fn: () => Promise<T>, tryCount: number = 1, lastResponse: any = undefined, lastError: any = undefined): Promise<T> {
+  private async executeWithRetry<T extends U> (fn: () => Promise<T>, tryCount: number = 1, lastResponse: any = undefined, lastError: any = undefined): Promise<T> {
     while (!await this._tokenBucket.consumeAsync());
     if (tryCount > this._retryOptions.maxRetries! + 1) {
       this.log("Max retries exceeded. Rejecting...");
@@ -97,12 +125,12 @@ export class AsyncCaller {
       .then(async (result) => {
         if (tryCount === this._retryOptions.maxRetries! + 1)
           return result;
-        const fetchResult = result as Response;
-        if (this.isRateLimitedError(fetchResult)) {
-          const delay = this.calculateRetryDelay(tryCount, fetchResult.headers);
+        const identifiedErrors = this.resultIdentifier.identifyResult(result);
+        if (identifiedErrors.isRateLimited) {
+          const delay = this.getRetryDelay(tryCount, result as U);
           // eslint-disable-next-line promise/param-names
           await new Promise<void>((innerResolve) => setTimeout(() => { innerResolve(); }, delay));
-          return this.executeWithRetry(fn, tryCount + 1, fetchResult, lastError);
+          return this.executeWithRetry(fn, tryCount + 1, result, lastError);
         } else
           return result;
       })
@@ -111,19 +139,22 @@ export class AsyncCaller {
           this.log("Max retries exceeded. Rejecting...");
           throw err;
         }
-        if (this.isClientSideError(err)) throw err;
+        const identifiedErrors = this.resultIdentifier.identifyError(err);
+        if (identifiedErrors.dontRetry && !identifiedErrors.isRateLimited) {
+          this.log("Don't retry. Throwing error...");
+          throw err;
+        }
         // At this point, it is either a rate limit error, or an Unkown error. Either way, we retry with delay.
-        const delay = this.calculateRetryDelay(tryCount, err.headers ?? err.response?.headers);
+        const delay = this.getRetryDelay(tryCount, err);
         // eslint-disable-next-line promise/param-names
         await new Promise<void>((innerResolve) => setTimeout(() => { innerResolve(); }, delay));
         return this.executeWithRetry(fn, tryCount + 1, lastResponse, err);
       });
   };
 
-  private async executeAndHandleErrors<T>(fn: () => Promise<T>): Promise<T> {
+  private async executeAndHandleErrors<T extends U>(fn: () => Promise<T>): Promise<T> {
     try {
-      const result = await this.executeWithRetry(fn, 1, undefined);
-      return result;
+      return this.executeWithRetry(fn, 1, undefined);
     } finally {
       this.runningTasks--;
       this.processTaskQueue();
@@ -133,7 +164,7 @@ export class AsyncCaller {
   private isClientSideError (errOrResponse: any): boolean {
     const possibleProperties = this.extractStatusCodeProperties(errOrResponse);
     for (const property of possibleProperties) {
-      if (property >= 400 && property < 500) {
+      if (property >= 400 && property < 500 && property !== 429) {
         this.log(`Client side error detected. Status code: ${property}`);
         this.log(JSON.stringify(errOrResponse));
         return true;
@@ -144,9 +175,10 @@ export class AsyncCaller {
 
   private isRateLimitedError (errOrResponse: any): boolean {
     const possibleProperties = this.extractStatusCodeProperties(errOrResponse);
+    this.log(`Possible properties: ${possibleProperties.join(", ")}`);
     for (const property of possibleProperties) {
       if (property === 429) {
-        this.log("Too many requests detected.");
+        this.log("Too many requests detected, you might want to adjust your token bucket options.");
         return true;
       }
     }
@@ -159,12 +191,21 @@ export class AsyncCaller {
       err?.response?.status,
       err?.statuscode,
       err?.response?.statuscode,
+      err?.code,
     ];
 
-    return statusCodes.filter((status) => typeof status === "number" && !Number.isNaN(status)) as number[];
+    return statusCodes.map((status) => {
+      if (typeof status === "number" && !Number.isNaN(status))
+        return status;
+      else if (typeof status === "string" && !Number.isNaN(Number.parseInt(status)))
+        return Number.parseInt(status);
+      else
+        return undefined;
+    }).filter(Boolean) as number[];
   }
 
-  private calculateRetryDelay (completedTryCount: number, headers: any): number {
+  private defaultCalculateRetryDelay (completedTryCount: number, result: U | Error): number {
+    const headers = (result as any).headers;
     if (headers) {
       let retryAfterHeader;
       if (typeof headers.get === "function")
@@ -183,6 +224,7 @@ export class AsyncCaller {
           const delay = Math.max(retryAfter - now, 0);
           this._tokenBucket.forceWaitUntilMilisecondsPassed(delay);
           this.log(`Retry-After header found. Delay: ${delay}ms`);
+
           return delay;
         } else {
           // If the Retry-After header value cannot be parsed, fall back to the default back-off strategy
@@ -210,3 +252,5 @@ export class AsyncCaller {
       console.log(`AsyncCaller: ${message}`);
   }
 }
+
+export * from "./types";
