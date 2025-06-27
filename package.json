@@ -1,7 +1,12 @@
 {
   "name": "@grapelaw/async-caller",
   "version": "2.0.0",
-  "keywords": ["async", "concurrency", "retry mechanism", "type safety"],
+  "keywords": [
+    "async",
+    "concurrency",
+    "retry mechanism",
+    "type safety"
+  ],
   "license": "MIT",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
@@ -28,13 +33,13 @@
     "eslint-plugin-promise": "^6.1.1",
     "tsup": "^8.0.2",
     "typescript": "^5.2.2",
-    "changelogen":"^0.5.7"
+    "changelogen": "^0.5.7"
   },
   "dependencies": {
     "@grapelaw/token-bucket": "^1.0.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/grape-law-firm/async-caller"
+    "url": "git+https://github.com/grape-law-firm/async-caller.git"
   }
 }
