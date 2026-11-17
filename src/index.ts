@@ -154,7 +154,7 @@ export class AsyncCaller<U=any> {
 
   private async executeAndHandleErrors<T extends U>(fn: () => Promise<T>): Promise<T> {
     try {
-      return this.executeWithRetry(fn, 1, undefined);
+      return await this.executeWithRetry(fn, 1, undefined);
     } finally {
       this.runningTasks--;
       this.processTaskQueue();

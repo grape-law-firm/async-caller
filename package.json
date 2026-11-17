@@ -1,6 +1,6 @@
 {
   "name": "@grapelaw/async-caller",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "keywords": [
     "async",
     "concurrency",
@@ -22,7 +22,8 @@
     "build": "tsup",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "release": "npm publish --tag latest"
+    "release": "npm publish --tag latest",
+    "test": "npm run build && node --test"
   },
   "devDependencies": {
     "@types/node": "^20.4.2",
